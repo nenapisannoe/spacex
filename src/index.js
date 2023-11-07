@@ -3,13 +3,15 @@ import * as d3 from "d3";
 import * as Geo from './geo.json'
 
 document.addEventListener("DOMContentLoaded", setup)
+const spaceX = new SpaceX();
 
 function setup(){
-    const spaceX = new SpaceX();
     spaceX.launches().then(data=>{
         const listContainer = document.getElementById("listContainer")
         renderLaunches(data, listContainer);
-        drawMap();
+    })
+    spaceX.launchpads().then((data) => {
+        drawMap(data);
     })
 }
 function renderLaunches(launches, container){
@@ -22,7 +24,15 @@ function renderLaunches(launches, container){
     container.replaceChildren(list);
 }
 
-function drawMap(){
+/*function launchpadToGeoJSON(launchpad){
+    return { "type": "Feature", 
+         "geometry": {"type": "Point", "coordinates": [launchpad.longitude, launchpad.latitude]},
+         "properties": {"name": launchpad.name},
+         "id": launchpad.id
+       }
+}*/
+
+function drawMap(launchpads){
     const width = 640;
     const height = 480;
     const margin = {top: 20, right: 10, bottom: 40, left: 100};
@@ -36,6 +46,9 @@ function drawMap(){
         .scale(70)
         .center([0,20])
         .translate([width / 2 - margin.left, height / 2]);
+
+    const path = d3.geoPath().projection(projection)
+
     svg.append("g")
         .selectAll("path")
         .data(Geo.features)
@@ -46,7 +59,20 @@ function drawMap(){
             .projection(projection)
         )
         .attr("fill", function (d) {
-            return colorScale(0);
+            return 0;
         })
         .style("opacity", .7)
+
+
+    const launchpadsGeodata = launchpads.map(spaceX.launchpadToGeoJSON)
+    
+    svg.append("g")
+        .attr("id", "launchpads")
+        .selectAll("path")
+        .data(launchpadsGeodata) 
+        .enter()
+        .append("path")
+        .attr("d", path) 
+        .attr("id", (d) => { return d.id })
+        .attr("class", "launchpad")
 }

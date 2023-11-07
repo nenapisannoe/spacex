@@ -17,6 +17,14 @@ class SpaceX{
 
     }
 
+    launchpadToGeoJSON(launchpad){
+        return { "type": "Feature", 
+             "geometry": {"type": "Point", "coordinates": [launchpad.longitude, launchpad.latitude]},
+             "properties": {"name": launchpad.name},
+             "id": launchpad.id
+           }
+    }
+
 }
 
 export {SpaceX}
